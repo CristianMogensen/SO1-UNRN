@@ -10,6 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+int comparar_directorios(char* path1, char* path2);
 
 int main(int argc, char* argv[]) {
     int codigo_salida;
@@ -17,6 +20,8 @@ int main(int argc, char* argv[]) {
     // Se busca el valor de la variable de entorno DATE_FORMAT.
     char* pwd = getenv("PWD");
     char* home = getenv("HOME");
+    printf("pwd: %s\n", pwd);
+    printf("home: %s\n", home);
 
     if ((pwd == NULL) && (home == NULL)) {
         codigo_salida = 2;
@@ -25,7 +30,7 @@ int main(int argc, char* argv[]) {
     } else if ((pwd == NULL) && (home != NULL)) {
         codigo_salida = 4;
     } else {
-        codigo_salida = (pwd == home) ? 0 : 1;
+        codigo_salida = comparar_directorios(pwd, home) ? 0 : 1;
     }
     
     // Mensajes de error.
@@ -47,4 +52,45 @@ int main(int argc, char* argv[]) {
     }
 
     return codigo_salida;
+}
+
+/**
+ * @brief Compara dos directorios, en cadenas de caracteres. Tiene en cuenta
+ * que pueden diferir las barras separadoras. Es decir, puede ser una división
+ * '/' o '\'.
+ * 
+ * @param path1 char* cadena de caracteres a comparar, no null. Toma el final
+ * de la cadena como un '\0'.
+ * @param path2 char* cadena de caracteres a comparar, no null. Toma el final
+ * de la cadena como un '\0'.
+ * @return int 0 si son distintos, 1 si son iguales. -1 en caso de que path1
+ * sea null, -2 en caso de que path2 lo sea.
+ */
+int comparar_directorios(char* path1, char* path2) {
+    if (path1 == NULL) return -1;
+    if (path2 == NULL) return -2;
+
+    int resultado = 1;
+
+    int i = 0;
+    char car1 = *(path1);
+    char car2 = *(path2);
+    while ((car1 != '\0') && (car2 != '\0')) {
+        if (car1 != car2) {
+            if (!((car1 == '/') || (car1 == '\\')) || !((car2 == '/') || (car2 == '\\'))) {
+                resultado = 0;
+                break;
+            }
+        }
+        printf("i:%04d\n", i);
+        i++;
+        car1 = *(path1 + i);
+        car2 = *(path2 + i);
+    }
+
+    if ((car1 != '\0') || (car2 != '\0')) {
+        resultado = 0;
+    }
+
+    return resultado;
 }
